@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Video Wall Room</title>
+    <style>
+      html, body { margin: 0; height: 100%; overflow: hidden; }
+      canvas { display: block; }
+    </style>
+  </head>
+  <body>
+    <script type="module">
+      import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+      import { PointerLockControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/PointerLockControls.js';
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+      const renderer = new THREE.WebGLRenderer();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      const controls = new PointerLockControls(camera, renderer.domElement);
+      document.body.addEventListener('click', () => controls.lock());
+
+      const roomSize = 50;
+      const geometry = new THREE.PlaneGeometry(roomSize, roomSize);
+      const video = document.createElement('video');
+      video.src = 'wall_video.mp4';
+      video.loop = true;
+      video.muted = false;
+      video.play();
+      const texture = new THREE.VideoTexture(video);
+      const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide });
+
+      const wall1 = new THREE.Mesh(geometry, material);
+      wall1.position.z = -roomSize / 2;
+      wall1.position.y = roomSize / 2;
+      scene.add(wall1);
+
+      const wall2 = new THREE.Mesh(geometry, material);
+      wall2.position.x = -roomSize / 2;
+      wall2.position.y = roomSize / 2;
+      wall2.rotation.y = Math.PI / 2;
+      scene.add(wall2);
+
+      const wall3 = new THREE.Mesh(geometry, material);
+      wall3.position.z = roomSize / 2;
+      wall3.position.y = roomSize / 2;
+      wall3.rotation.y = Math.PI;
+      scene.add(wall3);
+
+      const wall4 = new THREE.Mesh(geometry, material);
+      wall4.position.x = roomSize / 2;
+      wall4.position.y = roomSize / 2;
+      wall4.rotation.y = -Math.PI / 2;
+      scene.add(wall4);
+
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(roomSize, roomSize),
+        new THREE.MeshBasicMaterial({ color: 0x111111 })
+      );
+      floor.rotation.x = -Math.PI / 2;
+      scene.add(floor);
+
+      camera.position.y = 2;
+
+      const keys = {};
+      window.addEventListener('keydown', e => keys[e.code] = true);
+      window.addEventListener('keyup', e => keys[e.code] = false);
+
+      function animate() {
+        requestAnimationFrame(animate);
+        const speed = 0.2;
+        if (keys['KeyW']) controls.moveForward(speed);
+        if (keys['KeyS']) controls.moveForward(-speed);
+        if (keys['KeyA']) controls.moveRight(-speed);
+        if (keys['KeyD']) controls.moveRight(speed);
+        renderer.render(scene, camera);
+      }
+
+      animate();
+    </script>
+  </body>
+</html>
